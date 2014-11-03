@@ -14,7 +14,12 @@ import lombok.NonNull;
  * Classe base per un Entity di dominio funzionante tramite EventSourcing.
  * 
  * Una classe che implementa EventSourcedDomainEntity dovrà obbligatoriamente definire un costruttore che prenda
- * in ingresso lo stato relativo dell'entity.
+ * in ingresso lo stato relativo dell'entity, delegandolo a {@link #EventSourcedDomainEntity(it.r.dddtoolkit.es.ddd.DomainEntityState)} . Esempio:
+ * <pre>
+ * protected Entity(EntityState state) {
+ *     super(state);
+ * }
+ * </pre>
  * 
  * L'entity esporrà i metodi pubblici per modificarla. Ognuno di questi metodi viene implementato nella forma:
  * <pre>

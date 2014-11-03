@@ -25,6 +25,13 @@ import lombok.RequiredArgsConstructor;
 import com.google.common.base.Function;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Implementazione generica di un {@link DomainRepository} per salvare {@link EventSourcedDomainEntity} in un {@link EventStore}.
+ * @author rascioni
+ * @param <E>
+ * @param <S>
+ * @param <ID> 
+ */
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 @Slf4j
 public class EventSourcingDomainRepository<E extends EventSourcedDomainEntity<S, ID>, S extends DomainEntityState<ID>, ID extends Serializable> implements DomainRepository<E, ID> {
