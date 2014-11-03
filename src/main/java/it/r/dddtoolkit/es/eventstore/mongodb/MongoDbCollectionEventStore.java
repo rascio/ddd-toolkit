@@ -84,7 +84,7 @@ public class MongoDbCollectionEventStore implements EventStore {
 
     @Override
     public List<ApplicationEvent<DomainEvent>> history() {
-        return from(collection.find().toArray()).transform(new Function<MongoDbEventDescriptor, ApplicationEvent<DomainEvent>>() {
+        return from(collection.find().sort(byHappenedDate()).toArray()).transform(new Function<MongoDbEventDescriptor, ApplicationEvent<DomainEvent>>() {
 
             @Override
             public ApplicationEvent<DomainEvent> apply(MongoDbEventDescriptor input) {

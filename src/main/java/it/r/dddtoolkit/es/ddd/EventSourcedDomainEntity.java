@@ -11,19 +11,36 @@ import java.util.List;
 import lombok.NonNull;
 
 /**
+ * Classe base per un Entity di dominio funzionante tramite EventSourcing.
  * 
+ * Una classe che implementa EventSourcedDomainEntity dovrà obbligatoriamente definire un costruttore che prenda
+ * in ingresso lo stato relativo dell'entity.
+ * 
+ * L'entity esporrà i metodi pubblici per modificarla. Ognuno di questi metodi viene implementato nella forma:
+ * <pre>
+ * public void metodo(parametri...){
+ *     //verifica se possibile effettuare l'azione
+ * 
+ *     final DomainEvent event = ... //inizializzazione evento specifico
+ *     apply(event)
+ * }
+ * </pre>
+ * 
+ * Il metodo {@link #apply(it.r.dddtoolkit.ddd.DomainEvent) } permette di modificare l'entity e aggiungere l'evento
+ * alla lista degli eventi da salvare.
  * @author rascioni
  * @param <S>
  * @param <ID> 
+ * @see DomainEntityState
  */
 public abstract class EventSourcedDomainEntity<S extends DomainEntityState<ID>, ID extends Serializable> extends DomainEntity<ID> {
 
     private S state;
 
-    private List<DomainEvent> mutatingEvents;
+    private List<DomainEvent> uncommittedEvents;
     
     protected EventSourcedDomainEntity(@NonNull S state) {
-    	this.mutatingEvents = new ArrayList<DomainEvent>();
+    	this.uncommittedEvents = new ArrayList<DomainEvent>();
     	this.state = state;
     }
     
@@ -36,7 +53,7 @@ public abstract class EventSourcedDomainEntity<S extends DomainEntityState<ID>, 
     
     protected void updateTo(Version version) {
     	this.state().updateTo(version);
-    	this.mutatingEvents.clear();
+    	this.uncommittedEvents.clear();
     }
     
     @Override
@@ -46,7 +63,7 @@ public abstract class EventSourcedDomainEntity<S extends DomainEntityState<ID>, 
 
     protected void apply(DomainEvent aDomainEvent) {
         this.state().mutate(aDomainEvent);
-        this.mutatingEvents.add(aDomainEvent);
+        this.uncommittedEvents.add(aDomainEvent);
     }
 
     protected Version version() {
@@ -54,7 +71,7 @@ public abstract class EventSourcedDomainEntity<S extends DomainEntityState<ID>, 
     }
 
     protected List<DomainEvent> mutatingEvents() {
-		return mutatingEvents;
+		return uncommittedEvents;
 	}
 
 }

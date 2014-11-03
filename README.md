@@ -18,3 +18,6 @@ Creazione pacchetto
 -------------------
 Per generare il pacchetto della libreria è necessario utilizzare maven.
 Il pacchetto viene generator tramite il comando `mvn install`.
+
+**ATTENZIONE** Il progetto utilizza Lombok durante la fase di compilazione, per poterlo importare correttamente
+in un IDE si dovrà installare Lombok. Per questo fare riferimento alla guida ufficiale: http://projectlombok.org/features/index.html
