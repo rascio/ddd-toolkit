@@ -27,12 +27,12 @@ public class EventStream {
     @AllArgsConstructor(staticName = "of")
     public static class Version {
 
-        public static Version UNINITIALIZED = new Version(-1);
+        public static Version UNINITIALIZED = Version.of(-1);
 
         private long number;
 
         public Version next() {
-            return new Version(System.currentTimeMillis());
+            return Version.of(System.currentTimeMillis());
         }
 
         public boolean isGreater(@NonNull Version v) {

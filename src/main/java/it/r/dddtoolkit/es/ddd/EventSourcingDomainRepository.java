@@ -9,6 +9,7 @@ import it.r.dddtoolkit.es.eventstore.EventStream;
 import it.r.dddtoolkit.es.eventstore.EventStream.Version;
 import it.r.dddtoolkit.es.support.DefaultEventStreamIdentifierFromEntity;
 import it.r.dddtoolkit.es.support.EventStreamIdentifierFromEntity;
+import it.r.dddtoolkit.es.support.EventPublisher;
 
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
@@ -41,9 +42,10 @@ public class EventSourcingDomainRepository<E extends EventSourcedDomainEntity<S,
     private final EventStreamIdentifierFromEntity<ID> identifierFromEntity;
     private final DomainEntityStateFactory domainEntityStateFactory = new DomainEntityStateFactory();
     private final List<PreStoreEventInterceptor> interceptors;
+	private final EventPublisher eventPublisher;
 
-    public EventSourcingDomainRepository(@NonNull EventStore eventStore, @NonNull Class<E> entityClass, @NonNull List<PreStoreEventInterceptor> interceptors) {
-        this(eventStore, entityClass, new DefaultEventStreamIdentifierFromEntity<ID>(), interceptors);
+    public EventSourcingDomainRepository(@NonNull EventStore eventStore, @NonNull Class<E> entityClass, @NonNull List<PreStoreEventInterceptor> interceptors, EventPublisher eventPublisher) {
+        this(eventStore, entityClass, new DefaultEventStreamIdentifierFromEntity<ID>(), interceptors, eventPublisher);
     }
 
     @Override
@@ -78,6 +80,12 @@ public class EventSourcingDomainRepository<E extends EventSourcedDomainEntity<S,
         final Version version = eventStore.append(identifierFromEntity.streamIdentifierOf(entityClass, entity.identity()), applicationEvents, entity.version());
         log.debug("Updated entity {} at version: {}", entity.identity(), version);
         entity.updateTo(version);
+		
+		for (ApplicationEvent<?> event : applicationEvents) {
+            log.trace("Publishing event: {}", event);
+			event.getHeaders().put(ApplicationEvent.VERSION, version);
+            eventPublisher.publish(event);
+        }
     }
 
     public static Function<DomainEvent, ApplicationEvent<DomainEvent>> toApplicationEvent(final Map<String, Object> headers) {

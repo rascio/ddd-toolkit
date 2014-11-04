@@ -34,15 +34,13 @@ public class MongoDbCollectionEventStore implements EventStore {
 
     @NonNull
     private final JacksonDBCollection<MongoDbEventDescriptor, ObjectId> collection;
-    @NonNull
-    private final EventPublisher eventPublisher;
 
-    public MongoDbCollectionEventStore(DBCollection collection, EventPublisher eventPublisher, ObjectMapper mapper) {
-        this(JacksonDBCollection.wrap(collection, MongoDbEventDescriptor.class, ObjectId.class, mapper), eventPublisher);
+    public MongoDbCollectionEventStore(DBCollection collection, ObjectMapper mapper) {
+        this(JacksonDBCollection.wrap(collection, MongoDbEventDescriptor.class, ObjectId.class, mapper));
     }
 
     public MongoDbCollectionEventStore(DBCollection collection, EventPublisher eventPublisher) {
-        this(collection, eventPublisher, new ObjectMapper());
+        this(collection, new ObjectMapper());
     }
 
     @Override
@@ -74,11 +72,6 @@ public class MongoDbCollectionEventStore implements EventStore {
         log.debug("Appending events to stream {}", streamIdentifier);
         collection.insert(eventDescriptors);
 
-        for (ApplicationEvent<?> event : events) {
-            log.trace("Publishing event: {}", event);
-			event.getHeaders().put(ApplicationEvent.VERSION, nextVersion);
-            eventPublisher.publish(event);
-        }
         return nextVersion;
     }
 

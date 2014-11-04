@@ -6,7 +6,6 @@ import it.r.dddtoolkit.es.ApplicationEvent;
 import it.r.dddtoolkit.es.eventstore.EventStore;
 import it.r.dddtoolkit.es.eventstore.EventStream;
 import it.r.dddtoolkit.es.eventstore.EventStream.Version;
-import it.r.dddtoolkit.es.support.EventPublisher;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -21,11 +20,8 @@ public class MemoryEventStore implements EventStore {
 
     protected Map<String, EventStream> memoryStore;
 
-    protected EventPublisher eventPublisher;
-
-    public MemoryEventStore(EventPublisher eventPublisher) {
+    public MemoryEventStore() {
         this.memoryStore = Collections.synchronizedMap(new HashMap<String, EventStream>());
-        this.eventPublisher = eventPublisher;
     }
 
     @Override
@@ -39,11 +35,6 @@ public class MemoryEventStore implements EventStore {
         }
         stream = stream.append(events);
         memoryStore.put(identifier, stream);
-
-        for (ApplicationEvent<DomainEvent> event : events) {
-			event.getHeaders().put(ApplicationEvent.VERSION, stream.version());
-            eventPublisher.publish(event);
-        }
 
         return stream.version();
     }

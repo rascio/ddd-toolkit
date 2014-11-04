@@ -8,7 +8,6 @@ import it.r.dddtoolkit.es.support.Subscription;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import reactor.core.Reactor;
-import reactor.core.composable.Stream;
 import reactor.event.Event;
 import reactor.event.registry.Registration;
 import reactor.function.Consumer;

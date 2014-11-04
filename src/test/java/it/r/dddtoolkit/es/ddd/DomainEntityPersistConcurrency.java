@@ -11,6 +11,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
+import it.r.dddtoolkit.ddd.DomainEvent;
+import it.r.dddtoolkit.es.ApplicationEvent;
+import it.r.dddtoolkit.es.support.Subscription;
 
 public class DomainEntityPersistConcurrency {
 	
@@ -21,11 +24,11 @@ public class DomainEntityPersistConcurrency {
 	@Before
 	public void setUp(){
 		
-		eventPublisher = GuavaEventPublisher.sync();
+		eventPublisher = new MutedEventPublisher();
 		
-		eventStore = new MemoryEventStore(eventPublisher);
+		eventStore = new MemoryEventStore();
 		
-		repository = new EventSourcingDomainRepository(eventStore, TickTock.class, ImmutableList.<PreStoreEventInterceptor>of());
+		repository = new EventSourcingDomainRepository(eventStore, TickTock.class, ImmutableList.<PreStoreEventInterceptor>of(), eventPublisher);
 	}
 
 	@Test
@@ -59,6 +62,19 @@ public class DomainEntityPersistConcurrency {
 		tickTock2.tock();
 		
 		repository.store(tickTock2);
+	}
+	
+	private static class MutedEventPublisher implements EventPublisher {
+
+		@Override
+		public <D extends DomainEvent> Subscription subscribe(Class<D> eventType, EventCallback<D> callback) {
+			return null;
+		}
+
+		@Override
+		public void publish(ApplicationEvent<?> event) {
+		}
+		
 	}
 
 }
