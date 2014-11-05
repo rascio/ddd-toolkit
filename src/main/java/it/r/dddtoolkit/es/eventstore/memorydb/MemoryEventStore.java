@@ -1,6 +1,7 @@
 package it.r.dddtoolkit.es.eventstore.memorydb;
 
-import com.google.common.collect.ImmutableList;
+import static com.google.common.collect.FluentIterable.from;
+import com.google.common.base.Function;
 import it.r.dddtoolkit.ddd.DomainEvent;
 import it.r.dddtoolkit.es.ApplicationEvent;
 import it.r.dddtoolkit.es.eventstore.EventStore;
@@ -8,8 +9,9 @@ import it.r.dddtoolkit.es.eventstore.EventStream;
 import it.r.dddtoolkit.es.eventstore.EventStream.Version;
 
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -47,7 +49,7 @@ public class MemoryEventStore implements EventStore {
     private EventStream getOrCreate(String streamIdentifier) {
         EventStream eventStream = memoryStore.get(streamIdentifier);
         if (eventStream == null) {
-            eventStream = new EventStream(new LinkedList<ApplicationEvent<DomainEvent>>(), Version.UNINITIALIZED);
+            eventStream = new EventStream();
             log.trace("Stream {} doesn't exists creating new one. Version: ", streamIdentifier, eventStream.version());
             memoryStore.put(streamIdentifier, eventStream);
         }
@@ -56,8 +58,32 @@ public class MemoryEventStore implements EventStore {
 
     @Override
     public List<ApplicationEvent<DomainEvent>> history() {
-        return ImmutableList.of();
+        return from(memoryStore.values()).transformAndConcat(extractingEvents()).toSortedList(byHappeningDate());
     }
 
-    
+	/*
+	 *********************
+	 *	UTILITY METHODS  *
+	 *********************
+	 */
+    private static Function<EventStream, Iterable<ApplicationEvent<DomainEvent>>> extractingEvents(){
+		return new Function<EventStream, Iterable<ApplicationEvent<DomainEvent>>>(){
+
+			@Override
+			public Iterable<ApplicationEvent<DomainEvent>> apply(EventStream f) {
+				return f.events();
+			}
+			
+		};
+	}
+
+	private static Comparator<? super ApplicationEvent<DomainEvent>> byHappeningDate() {
+		return new Comparator<ApplicationEvent<DomainEvent>>() {
+
+			@Override
+			public int compare(ApplicationEvent<DomainEvent> o1, ApplicationEvent<DomainEvent> o2) {
+				return ((Date)o1.getHeader(ApplicationEvent.OCCURED_ON)).compareTo((Date)o1.getHeader(ApplicationEvent.OCCURED_ON));
+			}
+		};
+	}
 }

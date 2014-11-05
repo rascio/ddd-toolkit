@@ -6,15 +6,20 @@ import it.r.dddtoolkit.es.ApplicationEvent;
 import java.util.List;
 
 import lombok.AllArgsConstructor;
-import lombok.NonNull;
 import lombok.Value;
 import lombok.experimental.Accessors;
 
 import com.google.common.collect.Iterables;
+import java.util.LinkedList;
 
 @Value
 @Accessors(fluent = true)
+@AllArgsConstructor
 public class EventStream {
+	
+	public EventStream() {
+		this(new LinkedList<ApplicationEvent<DomainEvent>>(), Version.UNINITIALIZED);
+	}
 
     Iterable<ApplicationEvent<DomainEvent>> events;
     Version version;
