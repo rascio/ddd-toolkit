@@ -99,7 +99,7 @@ public class EventSourcingDomainRepository<E extends EventSourcedDomainEntity<S,
 
     @Override
     public boolean contains(ID domainIdentity) {
-        return eventStore.eventStream(identifierFromEntity.streamIdentifierOf(entityClass, domainIdentity)).version().isGreater(Version.UNINITIALIZED);
+        return !eventStore.eventStream(identifierFromEntity.streamIdentifierOf(entityClass, domainIdentity)).version().equals(Version.UNINITIALIZED);
     }
 
     private E create(Class<E> clazz, DomainEntityState<ID> state) {

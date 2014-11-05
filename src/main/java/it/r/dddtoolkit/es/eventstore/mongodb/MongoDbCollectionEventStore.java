@@ -62,7 +62,7 @@ public class MongoDbCollectionEventStore implements EventStore {
     @Override
     public Version append(String streamIdentifier, List<ApplicationEvent<DomainEvent>> events, Version expectedVersion) {
         final Version actualVersion = versionOf(streamIdentifier);
-        if (actualVersion.isGreater(expectedVersion)) {
+        if (!actualVersion.equals(expectedVersion)) {
             throw new IllegalStateException(String.format("Concurrent modification of stream [%s] expected version %s but was %s", streamIdentifier, expectedVersion, actualVersion));
         }
         final Version nextVersion = actualVersion.next();

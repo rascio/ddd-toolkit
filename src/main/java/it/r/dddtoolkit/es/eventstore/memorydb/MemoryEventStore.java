@@ -30,7 +30,7 @@ public class MemoryEventStore implements EventStore {
         EventStream stream = getOrCreate(identifier);
         log.trace("Appending to stream {} expected version: {} - actual: {}", identifier, expectedVersion, stream.version());
 
-        if (stream.version().isGreater(expectedVersion)) {
+        if (!stream.version().equals(expectedVersion)) {
             throw new IllegalStateException(String.format("Trying to append to an event stream with a different version. Current %s - Expected %s", stream.version(), expectedVersion));
         }
         stream = stream.append(events);

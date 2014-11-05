@@ -34,9 +34,5 @@ public class EventStream {
         public Version next() {
             return Version.of(System.currentTimeMillis());
         }
-
-        public boolean isGreater(@NonNull Version v) {
-            return this.number > v.number;
-        }
     }
 }
