@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>it.r</groupId>
 	<artifactId>dddtoolkit</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.2-SNAPSHOT</version>
 	<name>Domain Driven Design Toolkit</name>
 	<description>Libreria per gestire DDD con Event Sourcing e CQRS</description>
 
