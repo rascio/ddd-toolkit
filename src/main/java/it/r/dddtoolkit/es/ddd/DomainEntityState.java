@@ -3,10 +3,7 @@ package it.r.dddtoolkit.es.ddd;
 import it.r.dddtoolkit.ddd.DomainEvent;
 import it.r.dddtoolkit.es.eventstore.EventStream.Version;
 
-import java.lang.reflect.Method;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import lombok.AccessLevel;
 import lombok.Setter;
@@ -28,7 +25,7 @@ public abstract class DomainEntityState<ID> {
 
     private static final String MUTATOR_METHOD_NAME = "when";
 
-    private static Map<String, Method> mutatorMethods = new HashMap<String, Method>();
+	private final EntityBehavior behavior;
 
     private Version version;
 
@@ -38,6 +35,7 @@ public abstract class DomainEntityState<ID> {
     public DomainEntityState(ID id, Version v) {
         this.identity = id;
         this.version = v;
+		this.behavior = init();
     }
 
     protected DomainEntityState(ID id) {
@@ -68,63 +66,11 @@ public abstract class DomainEntityState<ID> {
 
         this.version = version;
     }
+	
+	protected abstract EntityBehavior init();
 
-    /*
-     *  PLUMBING, in java we dont have @dynamic
-     */
     protected void mutate(DomainEvent aDomainEvent) {
-
-        Class<? extends DomainEntityState> rootType = this.getClass();
-
-        Class<? extends DomainEvent> eventType = aDomainEvent.getClass();
-
-        String key = rootType.getName() + ":" + eventType.getName();
-
-        Method mutatorMethod = mutatorMethod(key, rootType, eventType);
-
-        try {
-            mutatorMethod.invoke(this, aDomainEvent);
-
-        } catch (Exception e) {
-
-            throw new RuntimeException(String.format("when %s on %s there was an error", aDomainEvent, this.getClass().getSimpleName()), e);
-
-        }
+		behavior.happened(aDomainEvent);
     }
 
-    private Method mutatorMethod(
-            String aKey,
-            Class<? extends DomainEntityState> aRootType,
-            Class<? extends DomainEvent> anEventType) {
-
-        Method method = mutatorMethods.get(aKey);
-
-        if (method != null) {
-            return method;
-        }
-
-        synchronized (mutatorMethods) {
-            try {
-                method = aRootType.getDeclaredMethod(
-                        MUTATOR_METHOD_NAME,
-                        anEventType);
-
-                method.setAccessible(true);
-
-                mutatorMethods.put(aKey, method);
-
-                return method;
-
-            } catch (Exception e) {
-                throw new IllegalArgumentException(
-                        "I do not understand "
-                        + MUTATOR_METHOD_NAME
-                        + "("
-                        + anEventType.getSimpleName()
-                        + ") because: "
-                        + e.getClass().getSimpleName() + ">>>" + e.getMessage(),
-                        e);
-            }
-        }
-    }
 }

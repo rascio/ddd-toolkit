@@ -2,18 +2,16 @@ package it.r.dddtoolkit.cqrs.command.adapter.simple;
 
 import static com.google.common.base.Predicates.not;
 import static com.google.common.collect.FluentIterable.from;
+import static it.r.dddtoolkit.util.Reflections.*;
 import it.r.dddtoolkit.cqrs.command.Command;
 import it.r.dddtoolkit.cqrs.command.CommandDispatcher;
 import it.r.dddtoolkit.cqrs.command.CommandExecutionContextHolder;
 import it.r.dddtoolkit.cqrs.command.CommandHandler;
 
 import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import com.google.common.base.Predicate;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -55,33 +53,10 @@ public class MapCommandDispatcher implements CommandDispatcher {
     }
 
     private <C extends Command> Method retrieveHandleMethod(Class<?> handlerClass) {
-        return from(methods(handlerClass))
-                .filter(method("handle"))
-                .filter(not(param(Command.class)))
+        return from(methodsOf(handlerClass))
+                .filter(methodNamed("handle"))
+                .filter(not(havingParams(Command.class)))
                 .first()
                 .get();
     }
-
-    private Predicate<Method> param(final Class<Command> class1) {
-        return new Predicate<Method>() {
-            @Override
-            public boolean apply(Method input) {
-                return input.getParameterTypes().length > 0 && input.getParameterTypes()[0].isAssignableFrom(class1);
-            }
-        };
-    }
-
-    private Predicate<? super Method> method(final String name) {
-        return new Predicate<Method>() {
-            @Override
-            public boolean apply(Method input) {
-                return input.getName().equals(name);
-            }
-        };
-    }
-
-    private List<Method> methods(Class<?> handlerClass) {
-        return Arrays.asList(handlerClass.getMethods());
-    }
-
 }

@@ -15,7 +15,7 @@ import it.r.dddtoolkit.ddd.DomainEvent;
 import it.r.dddtoolkit.es.ApplicationEvent;
 import it.r.dddtoolkit.es.support.Subscription;
 
-public class DomainEntityPersistConcurrency {
+public class DomainEntityPersistConcurrencyTest {
 	
 	private EventPublisher eventPublisher;
 	private EventStore eventStore;

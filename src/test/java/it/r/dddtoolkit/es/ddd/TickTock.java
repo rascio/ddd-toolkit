@@ -11,16 +11,16 @@ public class TickTock extends EventSourcedDomainEntity<TickTockState, String>{
 	}
 	
 	public void tick(){
-		if (!state().isTick()) {
-			throw new IllegalStateException("It's 'tack' time!");
+		if (state().isTick()) {
+			throw new IllegalStateException("It's 'tock' time!");
 		}
 		this.apply(new TickEvent());
 	}
 	
 	public void tock(){
-		if (state().isTick()) {
+		if (!state().isTick()) {
 			throw new IllegalStateException("It's 'tick' time!");
 		}
-		this.apply(new TackEvent());
+		this.apply(new TockEvent());
 	}
 }
