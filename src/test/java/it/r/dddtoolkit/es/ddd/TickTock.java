@@ -1,13 +1,22 @@
 package it.r.dddtoolkit.es.ddd;
 
-public class TickTock extends EventSourcedDomainEntity<TickTockState, String>{
+import it.r.dddtoolkit.core.Context;
+import it.r.dddtoolkit.modules.es.ddd.EventSourcedAggregate;
+
+public class TickTock extends EventSourcedAggregate<TickTockState, Context> {
 	
-	protected TickTock(TickTockState state){
-		super(state);
+	public TickTock(String id) {
+		super(id, new TickTockState(false));
 	}
 
-	public TickTock(String id) {
-		super(new TickTockState(id));
+	public static TickTockState handle(TickEvent event, TickTockState state) {
+		System.out.println("tick");
+		return new TickTockState(true);
+	}
+
+	public static TickTockState handle(TockEvent event, TickTockState state) {
+		System.out.println("tock");
+		return new TickTockState(false);
 	}
 	
 	public void tick(){

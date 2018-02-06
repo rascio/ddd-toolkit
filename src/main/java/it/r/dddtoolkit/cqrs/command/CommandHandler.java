@@ -1,5 +1,7 @@
 package it.r.dddtoolkit.cqrs.command;
 
+import it.r.dddtoolkit.core.Context;
+
 /**
  * Il CommandHandler è l'oggetto responsabile dell'esecuzione di un comando.
  * 
@@ -7,8 +9,8 @@ package it.r.dddtoolkit.cqrs.command;
  *
  * @param <C> tipo del comando gestito
  */
-public interface CommandHandler<C extends Command> {
+public interface CommandHandler<C extends Command, CTX extends Context> {
 
-    Object handle(C command) throws Exception;
+    void handle(C command, CTX context);
 
 }

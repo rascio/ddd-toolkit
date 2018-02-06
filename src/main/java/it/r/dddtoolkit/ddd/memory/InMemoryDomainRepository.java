@@ -6,7 +6,7 @@
 package it.r.dddtoolkit.ddd.memory;
 
 import com.google.common.collect.FluentIterable;
-import it.r.dddtoolkit.ddd.DomainEntity;
+import it.r.dddtoolkit.ddd.Aggregate;
 import it.r.dddtoolkit.ddd.DomainRepository;
 import java.io.Serializable;
 import java.util.Collections;
@@ -16,29 +16,28 @@ import java.util.Map;
 /**
  * Implementazione semplice di un DomainRepository tramite una map java
  * @author rascioni
- * @param <E>
- * @param <I>
+ * @param <A>
  */
-public class InMemoryDomainRepository<E extends DomainEntity<I>, I extends Serializable> implements DomainRepository<E, I>{
+public class InMemoryDomainRepository<A extends Aggregate<?>> implements DomainRepository<A>{
     
-    private final Map<I, E> store = Collections.synchronizedMap(new HashMap<I, E>());
+    private final Map<String, A> store = Collections.synchronizedMap(new HashMap<String, A>());
 
     @Override
-    public void store(E entity) {
+    public void store(A entity) {
         store.put(entity.identity(), entity);
     }
 
     @Override
-    public E findByIdentity(I domainIdentity) {
+    public A findByIdentity(String domainIdentity) {
         return store.get(domainIdentity);
     }
 
     @Override
-    public boolean contains(I domainIdentity) {
+    public boolean contains(String domainIdentity) {
         return store.containsKey(domainIdentity);
     }
     
-    protected FluentIterable<E> entities(){
+    protected FluentIterable<A> entities(){
         return FluentIterable.from(store.values());
     }
 }

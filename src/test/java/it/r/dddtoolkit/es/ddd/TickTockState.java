@@ -1,37 +1,10 @@
 package it.r.dddtoolkit.es.ddd;
 
-import static it.r.dddtoolkit.es.ddd.EntityBehavior.behavior;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Value;
 
-@Getter
-@Setter
-@EqualsAndHashCode(callSuper=true)
-@ToString(callSuper=true)
-public class TickTockState extends DomainEntityState<String>{
+@Value
+public class TickTockState{
 
-	private boolean tick = false;
-	
-	public TickTockState(String id) {
-		super(id);
-	}
+	private boolean tick;
 
-	@Override
-	protected EntityBehavior init() {
-		return behavior()
-			.when(TickEvent.class, new Behavior<TickEvent>() {
-				@Override
-				public void when(TickEvent event) {
-					setTick(true);
-				}
-			})
-			.when(TockEvent.class, new Behavior<TockEvent>() {
-				@Override
-				public void when(TockEvent event) {
-					setTick(false);
-				}
-			});
-	}
 }
