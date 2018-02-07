@@ -3,22 +3,29 @@ package it.r.dddtoolkit.modules.es.eventstore;
 import java.util.List;
 
 import it.r.dddtoolkit.core.DomainEvent;
-import it.r.dddtoolkit.modules.es.EventTransaction;
+import it.r.dddtoolkit.modules.es.ddd.AggregateTransaction;
 import it.r.dddtoolkit.core.Context;
 import lombok.Value;
 
+import java.util.Map;
+import java.util.SortedMap;
 import java.util.stream.Stream;
 
 @Value
 public class EventStream<C extends Context> {
 
-    List<EventTransaction<C>> transactions;
+    SortedMap<Version, AggregateTransaction<C>> transactions;
 
     public Stream<EventInfo> events() {
-        return transactions.stream()
-            .flatMap(tx -> tx.getEvents().stream()
-                .map(event -> new EventInfo(tx.getVersion(), tx.getAggregateId(), event))
-            );
+        return transactions.entrySet().stream()
+            .flatMap(entry -> {
+                final AggregateTransaction<C> transaction = entry.getValue();
+                final Version version = entry.getKey();
+
+                return transaction.getEvents()
+                    .stream()
+                    .map(event -> new EventInfo(version, transaction.getContext(), event));
+            });
     }
 
     public boolean hasTransactions() {
@@ -26,18 +33,17 @@ public class EventStream<C extends Context> {
     }
 
     @Value
-    public static class EventInfo {
-
+    public static class EventInfo<C extends Context> {
         private Version version;
-        private String aggregateId;
+        private C context;
         private DomainEvent event;
     }
 
-    public static Version lastVersion(EventStream<?> stream) {
-        final List<? extends EventTransaction<?>> transactions = stream.getTransactions();
+    public static Version lastVersion(EventStream stream) {
+        final SortedMap<Version, List<AggregateTransaction>> transactions = stream.getTransactions();
 
         return transactions.isEmpty()
             ? Version.UNINITIALIZED
-            : transactions.get(transactions.size() - 1).getVersion();
+            : transactions.lastKey();
     }
 }

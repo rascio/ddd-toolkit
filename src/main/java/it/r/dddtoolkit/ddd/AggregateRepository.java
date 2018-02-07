@@ -8,7 +8,7 @@ package it.r.dddtoolkit.ddd;
  * @author rascioni
  * @param <D>
  */
-public interface DomainRepository<D extends Aggregate<?>> {
+public interface AggregateRepository<D extends Aggregate<?>> {
     /**
      * Conserva all'interno del repository l'entity passata
      * @param entity 

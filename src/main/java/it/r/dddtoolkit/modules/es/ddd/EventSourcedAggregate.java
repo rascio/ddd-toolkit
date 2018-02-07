@@ -3,15 +3,15 @@ package it.r.dddtoolkit.modules.es.ddd;
 import com.google.common.collect.ImmutableList;
 import it.r.dddtoolkit.ddd.Aggregate;
 import it.r.dddtoolkit.core.DomainEvent;
-import it.r.dddtoolkit.modules.es.EventTransaction;
 import it.r.dddtoolkit.core.Context;
 import it.r.dddtoolkit.modules.es.eventstore.EventStream;
 import it.r.dddtoolkit.modules.es.eventstore.Version;
 import it.r.dddtoolkit.modules.es.support.AggregateMutator;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static it.r.dddtoolkit.modules.es.eventstore.EventStream.lastVersion;
 
@@ -51,22 +51,13 @@ public abstract class EventSourcedAggregate<S, C extends Context> extends Aggreg
         resetTo(lastVersion(eventStream));
     }
 
-    protected EventTransaction<C> commit(C context) {
-        final Version next = this.version.next();
+    protected void commit(Function<List<DomainEvent>, Version> next) {
+        final Version version = next.apply(ImmutableList.copyOf(uncommittedEvents));
 
-        final EventTransaction transaction = new EventTransaction(
-            identity(),
-            next,
-            ImmutableList.copyOf(uncommittedEvents),
-            context
-        );
-
-        resetTo(next);
-
-        return transaction;
+        resetTo(version);
 	}
 
-    private void resetTo(Version next) {
+    final void resetTo(Version next) {
         this.version = next;
         this.uncommittedEvents.clear();
     }

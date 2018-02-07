@@ -7,18 +7,18 @@ package it.r.dddtoolkit.ddd.memory;
 
 import com.google.common.collect.FluentIterable;
 import it.r.dddtoolkit.ddd.Aggregate;
-import it.r.dddtoolkit.ddd.DomainRepository;
-import java.io.Serializable;
+import it.r.dddtoolkit.ddd.AggregateRepository;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Implementazione semplice di un DomainRepository tramite una map java
+ * Implementazione semplice di un AggregateRepository tramite una map java
  * @author rascioni
  * @param <A>
  */
-public class InMemoryDomainRepository<A extends Aggregate<?>> implements DomainRepository<A>{
+public class InMemoryAggregateRepository<A extends Aggregate<?>> implements AggregateRepository<A> {
     
     private final Map<String, A> store = Collections.synchronizedMap(new HashMap<String, A>());
 

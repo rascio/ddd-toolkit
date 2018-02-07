@@ -7,7 +7,7 @@ import static java.util.Comparator.comparing;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import it.r.dddtoolkit.modules.es.EventTransaction;
+import it.r.dddtoolkit.modules.es.ddd.AggregateTransaction;
 import it.r.dddtoolkit.core.Context;
 import it.r.dddtoolkit.modules.es.eventstore.EventStore;
 import it.r.dddtoolkit.modules.es.eventstore.EventStream;
@@ -23,40 +23,36 @@ import lombok.extern.slf4j.Slf4j;
 public class MemoryEventStore<C extends Context> implements EventStore<C> {
 
     protected final Map<String, EventStream<C>> history;
-    protected final SortedMap<Long, EventTransaction<C>> index;
+    protected final SortedMap<Version, AggregateTransaction<C>> index;
 
     public MemoryEventStore() {
         this.history = new ConcurrentHashMap<>();
-        this.index = new TreeMap<>(Comparator.<Long>naturalOrder().reversed());
+        this.index = new TreeMap<>(Comparator.comparing(Version::getTimestamp));
     }
 
     @Override
-    public Version append(EventTransaction<C> tx, Version expectedVersion) {
+    public Version append(AggregateTransaction<C> tx, Version expectedVersion) {
         final Version nextVersion = expectedVersion.next();
 
         try {
-            history.compute(tx.getAggregateId(), (s, commits) -> {
+            history.compute(tx.getStreamId(), (s, eventStream) -> {
 
-                final List<EventTransaction<C>> result;
-                if (commits == null) {
-                    result = Arrays.asList(tx);
+                final SortedMap<Version, AggregateTransaction<C>> result;
+                if (eventStream == null) {
+                    result = new TreeMap<>(Comparator.comparing(Version::getNumber));
                 }
                 else {
-                    final Version actual = lastVersion(commits);
+                    final Version actual = lastVersion(eventStream);
 
                     checkState(actual.equals(expectedVersion),
                         "Trying to append to an event stream with a different version. Current %s - Expected %s", actual, expectedVersion);
 
-                    log.trace("Appending to stream {} expected version: {} - actual: {}", tx.getAggregateId(), expectedVersion, actual);
+                    log.trace("Appending to stream {} expected version: {} - actual: {}", tx.getStreamId(), expectedVersion, actual);
 
-                    final List<EventTransaction<C>> newEventTransactions = new ArrayList<>();
-                    newEventTransactions.addAll(commits.getTransactions());
-                    newEventTransactions.add(tx);
-
-                    index.put(nextVersion.getTimestamp(), tx);
-
-                    result = ImmutableList.copyOf(newEventTransactions);
+                    result = new TreeMap<>(eventStream.getTransactions());
                 }
+                result.put(nextVersion, tx);
+                index.put(nextVersion, tx);
 
                 return new EventStream<>(result);
             });
@@ -72,19 +68,18 @@ public class MemoryEventStore<C extends Context> implements EventStore<C> {
     }
 
     @Override
-    public EventStream eventStream(String streamId) {
-        return history.getOrDefault(streamId, new EventStream(Collections.emptyList()));
+    public EventStream<C> eventStream(String streamId) {
+        return history.getOrDefault(streamId, new EventStream(Collections.emptySortedMap()));
     }
 
     @Override
-    public EventStream happenedFrom(Version version) {
-        final SortedMap<Long, EventTransaction<C>> commits = index.headMap(version.getTimestamp());
+    public EventStream<C> happenedFrom(Version version) {
+        final SortedMap<Version, AggregateTransaction<C>> commits = new TreeMap<>(index.tailMap(version));
 
-        final List<EventTransaction<C>> events = commits.values()
-            .stream()
-            .sorted(comparing(commit -> -commit.getVersion().getTimestamp()))
-            .collect(Collectors.toList());
+        if (version.equals(index.lastKey())) {
+            commits.remove(commits.lastKey()); //tailMap is >=, but we want >
+        }
 
-        return new EventStream(Lists.reverse(events));
+        return new EventStream(commits);
     }
 }

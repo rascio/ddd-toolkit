@@ -1,4 +1,4 @@
-package it.r.dddtoolkit.modules.es;
+package it.r.dddtoolkit.modules.es.ddd;
 
 import it.r.dddtoolkit.core.DomainEvent;
 import it.r.dddtoolkit.core.Context;
@@ -15,10 +15,9 @@ import java.util.List;
  * @author rascioni
  */
 @Value
-public class EventTransaction<C extends Context> {
+public class AggregateTransaction<C extends Context> {
 
-    String aggregateId;
-    Version version;
+    String streamId;
     List<DomainEvent> events;
     C context;
 

@@ -1,40 +1,44 @@
 package it.r.dddtoolkit.modules.es.ddd;
 
-import it.r.dddtoolkit.ddd.DomainRepository;
-import it.r.dddtoolkit.modules.es.EventTransaction;
+import it.r.dddtoolkit.ddd.AggregateRepository;
 import it.r.dddtoolkit.core.Context;
 import it.r.dddtoolkit.modules.es.eventstore.EventStore;
 import it.r.dddtoolkit.modules.es.eventstore.EventStream;
 import it.r.dddtoolkit.modules.es.eventstore.Version;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.function.Function;
+
 /**
- * Implementazione generica di un {@link DomainRepository} per salvare {@link EventSourcedAggregate} in un {@link EventStore}.
- * @author rascioni
- * @param <E>
- * @param <S>
+ * Un {@link EventSourcedAggregateRepository} viene utilizzato durante la gestione di un comando.
+ * @param <A>
+ * @param <C>
  */
 @Slf4j
-public class EventSourcingDomainRepository<E extends EventSourcedAggregate<S, C>, S, C extends Context> implements DomainRepository<E> {
+public class EventSourcedAggregateRepository<A extends EventSourcedAggregate<?, C>, C extends Context> implements AggregateRepository<A> {
 
     private final EventStore eventStore;
-    private final Class<E> entityClass;
+    private final Class<A> entityClass;
     private final C context;
 
-    public EventSourcingDomainRepository(EventStore eventStore, Class<E> entityClass, C context) {
+    public static <A extends EventSourcedAggregate<?, C>, C extends Context> Function<C, AggregateRepository<A>> factoryFrom(EventStore<C> eventStore, Class<A> aggregateType) {
+        return ctx -> new EventSourcedAggregateRepository<>(eventStore, aggregateType, ctx);
+    }
+
+    public EventSourcedAggregateRepository(EventStore eventStore, Class<A> entityClass, C context) {
         this.eventStore = eventStore;
         this.entityClass = entityClass;
         this.context = context;
     }
 
-    public EventSourcingDomainRepository(EventStore eventStore, Class<E> entityClass) {
+    public EventSourcedAggregateRepository(EventStore eventStore, Class<A> entityClass) {
         this(eventStore, entityClass, null);
     }
 
     @Override
-    public E findByIdentity(String aggregateId) {
+    public A findByIdentity(String aggregateId) {
 
-        final E aggregate;
+        final A aggregate;
         try {
             aggregate = entityClass.getConstructor(String.class)
                 .newInstance(aggregateId);
@@ -56,13 +60,21 @@ public class EventSourcingDomainRepository<E extends EventSourcedAggregate<S, C>
     }
 
     @Override
-    public void store(E entity) {
+    public void store(A entity) {
 
         log.debug("Persisting entity {} at version: {}", entity.identity(), entity.version());
 
-        final EventTransaction<C> transaction = entity.commit(context);
-        final Version version = eventStore.append(transaction, entity.version());
-        log.debug("Updated entity {} at version: {}", entity.identity(), version);
+        entity.commit(events -> {
+            final AggregateTransaction<C> transaction = new AggregateTransaction<>(
+                entity.identity(),
+                events,
+                context
+            );
+            final Version version = eventStore.append(transaction, entity.version());
+            log.debug("Updated entity {} at version: {}", entity.identity(), version);
+
+            return version;
+        });
 
 
         // TODO: REFACTOR IN A SEPARATE PROCESS

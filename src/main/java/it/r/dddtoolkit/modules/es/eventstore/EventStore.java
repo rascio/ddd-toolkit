@@ -1,6 +1,6 @@
 package it.r.dddtoolkit.modules.es.eventstore;
 
-import it.r.dddtoolkit.modules.es.EventTransaction;
+import it.r.dddtoolkit.modules.es.ddd.AggregateTransaction;
 import it.r.dddtoolkit.core.Context;
 
 /**
@@ -23,7 +23,7 @@ public interface EventStore<C extends Context> {
 	 * @param expectedVersion
 	 * @return
 	 */
-    Version append(EventTransaction<C> events, Version expectedVersion);
+    Version append(AggregateTransaction<C> events, Version expectedVersion);
     
 	/**
 	 * Restituisce la lista di tutti gli eventi salvati.
