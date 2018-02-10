@@ -11,7 +11,7 @@ public class MapCommandBusTest {
 
     public static void main(String[] args) {
         final CommandBus<Context> bus = MapCommandBus.builder()
-            .register(TickCommand.class, new TickCommandHandler(EventSourcedAggregateRepository.factoryFrom(new MemoryEventStore(), TickTock.class)))
+            .register(TickCommand.class, new TickCommandHandler(new EventSourcedAggregateRepository<>(new MemoryEventStore(), TickTock.class)))
             .build();
 
         bus.handle(new TickCommand(), () -> "5");

@@ -1,5 +1,7 @@
 package it.r.dddtoolkit.ddd;
 
+import it.r.dddtoolkit.core.Context;
+
 /**
  * Interfaccia generale per i repository di dominio. Un Repository è associato
  * ad un entità del dominio, nel caso di un Aggregate sarà associato SOLAMENTE
@@ -8,7 +10,7 @@ package it.r.dddtoolkit.ddd;
  * @author rascioni
  * @param <D>
  */
-public interface AggregateRepository<D extends Aggregate<?>> {
+public interface AggregateRepository<D extends Aggregate<?, C>, C extends Context> {
     /**
      * Conserva all'interno del repository l'entity passata
      * @param entity 
@@ -17,17 +19,17 @@ public interface AggregateRepository<D extends Aggregate<?>> {
 
     /**
      * Ricerca all'iterno del repository un entity tramite la sua identità
-     * @param aggregateId
-     * @return 
+     * @param context
+     * @return
      */
-    D findByIdentity(String aggregateId);
+    D findByIdentity(C context);
 
     /**
      * Controlla se il repository contiene una determinata entity.
-     * @param aggregateId
-     * @return 
+     * @param context
+     * @return
      */
-    default boolean contains(String aggregateId) {
-        return findByIdentity(aggregateId) != null;
+    default boolean contains(C context) {
+        return findByIdentity(context) != null;
     }
 }

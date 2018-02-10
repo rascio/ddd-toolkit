@@ -1,5 +1,6 @@
 package it.r.dddtoolkit.ddd;
 
+import it.r.dddtoolkit.core.Context;
 import it.r.dddtoolkit.modules.es.eventstore.Version;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -11,21 +12,25 @@ import org.apache.commons.lang3.builder.ToStringStyle;
  *
  * @author rascioni
  */
-public abstract class Aggregate<S> {
+public abstract class Aggregate<S, C extends Context> {
 
-    private final String id;
+    private final C context;
     protected Version version;
     protected S state;
 
     /**
      * Costruttore vuoto obbligatorio per poter instanziare l'entity tramite
      * reflection
-     * @param id
+     * @param context
      */
-    protected Aggregate(String id, S state) {
-        this.id = id;
+    protected Aggregate(C context, S state) {
+        this.context = context;
         this.version = Version.UNINITIALIZED;
         this.state = state;
+    }
+
+    public C getContext() {
+        return context;
     }
 
     /**
@@ -34,7 +39,7 @@ public abstract class Aggregate<S> {
      * @return identity
      */
     public String identity() {
-        return this.id;
+        return this.context.getAggregateId();
     }
 
     public Version version() {

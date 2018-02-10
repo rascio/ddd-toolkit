@@ -15,7 +15,7 @@ import java.util.List;
  * @author rascioni
  */
 @Value
-public class AggregateTransaction<C extends Context> {
+public class EventsTransaction<C extends Context> {
 
     String streamId;
     List<DomainEvent> events;

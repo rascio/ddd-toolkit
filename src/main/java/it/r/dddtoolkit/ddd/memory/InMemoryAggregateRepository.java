@@ -6,6 +6,7 @@
 package it.r.dddtoolkit.ddd.memory;
 
 import com.google.common.collect.FluentIterable;
+import it.r.dddtoolkit.core.Context;
 import it.r.dddtoolkit.ddd.Aggregate;
 import it.r.dddtoolkit.ddd.AggregateRepository;
 
@@ -18,7 +19,7 @@ import java.util.Map;
  * @author rascioni
  * @param <A>
  */
-public class InMemoryAggregateRepository<A extends Aggregate<?>> implements AggregateRepository<A> {
+public class InMemoryAggregateRepository<A extends Aggregate<?, C>, C extends Context> implements AggregateRepository<A, C> {
     
     private final Map<String, A> store = Collections.synchronizedMap(new HashMap<String, A>());
 
@@ -28,13 +29,13 @@ public class InMemoryAggregateRepository<A extends Aggregate<?>> implements Aggr
     }
 
     @Override
-    public A findByIdentity(String domainIdentity) {
-        return store.get(domainIdentity);
+    public A findByIdentity(Context c) {
+        return store.get(c.getAggregateId());
     }
 
     @Override
-    public boolean contains(String domainIdentity) {
-        return store.containsKey(domainIdentity);
+    public boolean contains(Context c) {
+        return store.containsKey(c);
     }
     
     protected FluentIterable<A> entities(){

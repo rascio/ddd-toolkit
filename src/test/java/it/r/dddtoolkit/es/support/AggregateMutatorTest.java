@@ -15,7 +15,7 @@ public class AggregateMutatorTest {
 
     @Test
     public void testHandlerFor() {
-        AggregateMutator<TickTockState> mutator = AggregateMutator.of(new TickTock(""));
+        AggregateMutator<TickTockState> mutator = AggregateMutator.of(new TickTock(() -> ""));
 
         final TickEvent event = new TickEvent();
         final TickTockState result = mutator.handlerFor(event)

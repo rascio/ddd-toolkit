@@ -5,7 +5,7 @@
 //import com.google.common.collect.Iterators;
 //import com.mongodb.DBCollection;
 //import com.mongodb.WriteConcern;
-//import it.r.dddtoolkit.modules.es.ddd.AggregateTransaction;
+//import it.r.dddtoolkit.modules.es.ddd.EventsTransaction;
 //import it.r.dddtoolkit.core.Context;
 //import it.r.dddtoolkit.modules.es.eventstore.EventStore;
 //import it.r.dddtoolkit.modules.es.eventstore.EventStream;
@@ -49,17 +49,17 @@
 //            .sort(DBSort.asc(VERSION_TIMESTAMP))
 //            .iterator();
 //
-//        final Iterator<AggregateTransaction<C>> transactions = Iterators.transform(
+//        final Iterator<EventsTransaction<C>> transactions = Iterators.transform(
 //            cursor,
-//            tx -> new AggregateTransaction<>(streamId, tx.getEvents(), tx.getContext())
+//            tx -> new EventsTransaction<>(streamId, tx.getEvents(), tx.getContext())
 //        );
-//        final List<AggregateTransaction<C>> events = ImmutableList.copyOf(transactions);
+//        final List<EventsTransaction<C>> events = ImmutableList.copyOf(transactions);
 //
 //        return new EventStream<>(events);
 //    }
 //
 //    @Override
-//    public Version append(AggregateTransaction<C> tx, Version expectedVersion) {
+//    public Version append(EventsTransaction<C> tx, Version expectedVersion) {
 //        final String id = tx.getStreamId();
 //
 //        final Version actualVersion = versionOf(id);

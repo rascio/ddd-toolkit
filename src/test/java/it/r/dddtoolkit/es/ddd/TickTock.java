@@ -5,8 +5,8 @@ import it.r.dddtoolkit.modules.es.ddd.EventSourcedAggregate;
 
 public class TickTock extends EventSourcedAggregate<TickTockState, Context> {
 
-	public TickTock(String id) {
-		super(id, new TickTockState(false));
+	public TickTock(Context context) {
+		super(new TickTockState(false), context);
 	}
 
 	public static TickTockState handle(TickEvent event, TickTockState state) {

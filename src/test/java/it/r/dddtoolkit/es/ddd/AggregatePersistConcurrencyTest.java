@@ -33,16 +33,15 @@ public class AggregatePersistConcurrencyTest {
 
         final EventSourcedAggregateRepository<TickTock, Context> repository = new EventSourcedAggregateRepository<>(
 		    eventStore,
-		    TickTock.class,
-            () -> "test"
+		    TickTock.class
         );
 
-        final TickTock tickTock = new TickTock("test");
+        final TickTock tickTock = new TickTock(() -> "test");
 
 		tickTock.apply(new TickEvent());
 		repository.store(tickTock);
 
-		final TickTock tickTock2 = repository.findByIdentity(tickTock.identity());
+		final TickTock tickTock2 = repository.findByIdentity(tickTock.getContext());
 
 		tickTock2.apply(new TockEvent());
 		repository.store(tickTock2); //increment the version on tickTock2

@@ -12,8 +12,8 @@ import java.util.function.Function;
 
 public class TickCommandHandler extends AggregateCommandHandler<TickTock, TickCommand, Context> {
 
-    public TickCommandHandler(Function<Context, AggregateRepository<TickTock>> factory) {
-        super(factory);
+    public TickCommandHandler(AggregateRepository<TickTock, Context> repository) {
+        super(repository);
     }
 
     @Override

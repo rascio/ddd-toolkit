@@ -25,9 +25,10 @@ public class MainTest {
     public void test() {
         final EventStore<Context> eventStore = new MemoryEventStore<>();
 
+        final EventSourcedAggregateRepository<TickTock, Context> repository = new EventSourcedAggregateRepository<>(eventStore, TickTock.class);
         final CommandBus<Context> commandBus = MapCommandBus.builder()
-            .register(TickCommand.class, new TickCommandHandler(EventSourcedAggregateRepository.factoryFrom(eventStore, TickTock.class)))
-            .register(TockCommand.class, new TockCommandHandler(EventSourcedAggregateRepository.factoryFrom(eventStore, TickTock.class)))
+            .register(TickCommand.class, new TickCommandHandler(repository))
+            .register(TockCommand.class, new TockCommandHandler(repository))
             .build();
 
         commandBus.handle(new TickCommand(), () -> "test");
@@ -40,20 +41,19 @@ public class MainTest {
         catch (Exception e) { }
 
         commandBus.handle(new TickCommand(), () -> "test2");
+        commandBus.handle(new TickCommand(), () -> "test");
 
         final EventStream<Context> history = eventStore.happenedFrom(Version.UNINITIALIZED);
 
-        history.getTransactions()
-            .entrySet()
-            .stream()
+        history.transactions()
             .peek(e -> System.out.println(e.getKey() + " - " + e.getValue().getStreamId()))
             .flatMap(e -> e.getValue().getEvents().stream())
             .forEach(e -> System.out.println("\t" + e));
 
-        assertEquals(3, history.events().count());
+        assertEquals(4, history.events().count());
 
 
-        final EventStream<Context> latest = eventStore.happenedFrom(history.getTransactions().lastKey());
+        final EventStream<Context> latest = eventStore.happenedFrom(history.lastVersion());
 
         assertEquals(0, latest.events().count());
     }
